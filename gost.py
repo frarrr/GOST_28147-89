@@ -216,14 +216,17 @@ class Main_window():
         if self.method_var.get() == 'CNT mode':
             self.encrypt()
 
+    def copy(self):
+        self.window.clipboard_clear()
+        self.window.clipboard_append(self.result_text.get("1.0","end-1c"))
 
     def __init__(self):
         self.window = Tk()
         self.window.resizable(False, False)
 
-        self.window.title('GOST 28147-89 encoder')
+        self.window.title('GOST 28147-89 Encoder')
         frame = ttk.Frame(self.window, padding='5 5 5 5')
-        frame.grid (column=0, row=0, sticky=(N,W,E,S))
+        frame.grid(column=0, row=0, sticky=(N,W,E,S))
 
         self.method_var = StringVar()
         self.s_box_var  = StringVar()
@@ -241,78 +244,155 @@ class Main_window():
                             'id-tc26-gost-28147-param-Z'           : 'S_box/box_z'
         }
 
+        grid_row        = 0
+        grid_pady       = 5
+        grid_text_hight = 4
+        text_width      = 52
 
-        self.row = 0
-        def_pady=5
+        ttk.Label(frame, text='Encryption mode').\
+        grid(
+            row=grid_row,
+            column=0,
+            sticky='W',
+            pady=grid_pady)
 
-        method_label = ttk.Label(frame, text='Encryption mode').\
-        grid(row=self.row, column=0, sticky='W', pady=def_pady)
-
-        enc_method = ttk.Combobox(frame,
+        enc_method = ttk.Combobox(
+            frame,
             textvariable=self.method_var,
             values=list(['ECB mode', 'CNT mode']),
             state='readonly',
             width=24)
-        enc_method.grid(row=self.row, column=1, sticky='W', padx=5, pady=def_pady)
+        enc_method.grid(
+            row=grid_row,
+            column=1,
+            sticky='W',
+            padx=5,
+            pady=grid_pady)
 
-        s_box_label = ttk.Label(frame, text='S-box')
-        s_box_label.grid(row=self.row, column=2, sticky='W', pady=def_pady)
+        ttk.Label(frame, text='S-box').\
+        grid(
+            row=grid_row,
+            column=2,
+            sticky='W',
+            pady=grid_pady)
 
-        s_box_list = ttk.Combobox(frame,
+        ttk.Combobox(
+            frame,
             textvariable=self.s_box_var,
             values=list(self.s_box_dict.keys()),
             state='readonly',
-            width=36)
-        s_box_list.grid(row=self.row, column=3, sticky='W', padx=5, pady=def_pady)
+            width=36).\
+        grid(
+            row=grid_row,
+            column=3,
+            sticky='W',
+            padx=5,
+            pady=grid_pady)
 
-        self.row += 1
+        grid_row += 1
 
-        key_label = ttk.Label(frame, text='Encryption key')
-        key_label.grid(row=self.row, column=0, sticky='W', pady=def_pady)
+        ttk.Label(frame, text='Encryption key').\
+        grid(
+            row=grid_row,
+            column=0,
+            sticky='W',
+            pady=grid_pady)
+        ttk.Entry(frame, textvariable=self.key_var, width=30).\
+        grid(
+            row=grid_row,
+            column=1,
+            columnspan=3,
+            sticky='NWES',
+            padx=5,
+            pady=grid_pady)
 
-        key_entry = ttk.Entry(frame, textvariable=self.key_var, width=30)
-        key_entry.grid(row=self.row, column=1, columnspan=3, sticky='NWES', padx=5, pady=def_pady)
+        grid_row += 1
 
-        self.row += 1
-
-        iv_label = ttk.Label(frame, text='Initialization vector')
-        iv_label.grid(row=self.row, column=0, sticky='W', pady=def_pady)
+        ttk.Label(frame, text='Initialization vector').\
+        grid(
+            row=grid_row,
+            column=0,
+            sticky='W',
+            pady=grid_pady)
 
         iv_entry = ttk.Entry(frame, state='disabled', textvariable=self.iv_var, width=30)
-        iv_entry.grid(row=self.row, column=1, sticky='NWES', padx=5, pady=def_pady)
+        iv_entry.grid(
+            row=grid_row,
+            column=1,
+            sticky='NWES',
+            padx=5,
+            pady=grid_pady)
+
         enc_method.bind("<<ComboboxSelected>>", lambda event: \
             iv_entry.config(state='normal') if self.method_var.get() == 'CNT mode'\
             else iv_entry.config(state='disabled'))
 
-        self.row += 1
+        grid_row += 1
 
-        base_label = ttk.Label(frame, text='Input text: 0x')
-        base_label.grid(row=self.row, column=0, sticky='W', pady=def_pady)
+        ttk.Label(frame, text='Input text: 0x').\
+        grid(
+            row=grid_row,
+            column=0,
+            sticky='W',
+            pady=grid_pady)
 
-        self.row += 1
+        grid_row += 1
 
-        self.base_text = Text(frame, height=10, width=60)
-        self.base_text.grid(row=self.row, column=0, columnspan=4 ,sticky='NWES', padx=5, pady=def_pady)
+        self.base_text = Text(frame, height=grid_text_hight, width=text_width)
+        self.base_text.grid(
+            row=grid_row,
+            column=0,
+            rowspan=grid_text_hight,
+            columnspan=4,
+            sticky='NWS',
+            padx=5,
+            pady=grid_pady)
 
-        self.row += 1
+        ttk.Button(frame, text='Encrypt', width=20, command=lambda: self.encrypt()).\
+        grid(
+            row=grid_row,
+            column=3,
+            sticky='NES',
+            padx=5,
+            pady=grid_pady)
 
-        encode_button = ttk.Button(frame, text='Encrypt',
-            command=lambda: self.encrypt())
-        encode_button.grid(row=self.row, column=0, columnspan=2 ,sticky='NWES', padx=5, pady=def_pady)
+        grid_row += 1
 
-        decode_button = ttk.Button(frame, text='Decrypt',
-            command=lambda: self.decrypt())
-        decode_button.grid(row=self.row, column=2, columnspan=2 ,sticky='NWES', padx=5, pady=def_pady)
+        ttk.Button(frame, text='Decrypt', width=20, command=lambda: self.decrypt()).\
+        grid(
+            row=grid_row,
+            column=3,
+            sticky='NES',
+            padx=5,
+            pady=grid_pady)
 
-        self.row += 1
+        grid_row += grid_text_hight + 1
 
-        result_label = ttk.Label(frame, text='Result:')
-        result_label.grid(row=self.row, column=0, sticky='W', pady=def_pady)
+        ttk.Label(frame, text='Result: 0x').\
+        grid(
+            row=grid_row,
+            column=0,
+            sticky='W',
+            pady=grid_pady)
 
-        self.row += 1
+        grid_row += 1
 
-        self.result_text = Text(frame, height=10, width=60)
-        self.result_text.grid(row=self.row, column=0, columnspan=4 ,sticky='NWES', padx=5, pady=def_pady)
+        self.result_text = Text(frame, height=grid_text_hight, width=text_width)
+        self.result_text.grid(
+            row=grid_row,
+            column=0,
+            rowspan=grid_text_hight,
+            columnspan=4,
+            sticky='NWS',
+            padx=5,
+            pady=(grid_pady,grid_pady+5))
 
+        ttk.Button(frame, text='Copy to clipboard', width=20, command=lambda: self.copy()).\
+        grid(
+            row=grid_row,
+            column=3,
+            sticky='NE',
+            padx=5,
+            pady=grid_pady)
 
 Main_window().window.mainloop()
